@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>B.C.H.E Terminal</title>
+  <style>
+    body {
+      background: black;
+      color: #00FF00;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+      white-space: pre-wrap;
+      overflow: hidden;
+      transition: all 0.1s ease-in-out;
+    }
+    .red { color: red; }
+    .hidden { display: none; }
+    #error-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black;
+      color: red;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+      display: none;
+    }
+    @keyframes shake {
+      0% { transform: translate(1px, 1px); }
+      25% { transform: translate(-1px, 2px); }
+      50% { transform: translate(-3px, 1px); }
+      75% { transform: translate(3px, -1px); }
+      100% { transform: translate(1px, 1px); }
+    }
+  </style>
+</head>
+<body onclick="startAudio()">
+  <div id="terminal"></div>
+  <div id="error-screen">
+    <div>Can’t run program :(</div>
+    <div style="margin-top: 20px;">System stopped working</div>
+    <div class="red" style="font-size: 14px; margin-top: 10px;">
+      process.broken();<br>
+      System.exit();<br>
+      crash.protocol.initiated();<br>
+    </div>
+  </div>
+
+  <audio id="glitchSound" src="https://assets.mixkit.co/sfx/preview/mixkit-glitchy-robot-alarm-993.mp3"></audio>
+  <audio id="scarySound" src="https://assets.mixkit.co/sfx/preview/mixkit-creepy-laugh-voice-3043.mp3"></audio>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const glitchSound = document.getElementById('glitchSound');
+    const scarySound = document.getElementById('scarySound');
+
+    let delay = 0;
+
+    function startAudio() {
+      glitchSound.play();
+      scarySound.play();
+    }
+
+    function typeLine(text, prompt = true, newLine = true, speed = 50) {
+      return new Promise((resolve) => {
+        let i = 0;
+        const line = document.createElement('div');
+        if (prompt) line.textContent = "> ";
+        terminal.appendChild(line);
+
+        function typeChar() {
+          if (i < text.length) {
+            line.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeChar, speed);
+          } else {
+            if (newLine) terminal.appendChild(document.createElement('br'));
+            resolve();
+          }
+        }
+
+        typeChar();
+      });
+    }
+
+    function print(text, color = "#00FF00") {
+      const span = document.createElement('div');
+      span.innerHTML = `<span style="color:${color}">${text}</span>`;
+      terminal.appendChild(span);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    async function runSequence() {
+      await typeLine("login id: 1038");
+      await typeLine("password: ••••");
+      print("Access granted. Welcome, Agent.");
+      await typeLine("init.syscore");
+      print("System successfully launched.");
+      await typeLine("cameras.interface.viewer");
+
+      // Delay before cameras load
+      print("Fetching camera statuses...\n");
+      for (let i = 1; i <= 100; i++) {
+        const name = `camera_${i.toString().padStart(2, '0')}`;
+        const status = (i === 17) ? "online" : "offline";
+        const color = (i === 17) ? "#00FF00" : "red";
+        print(`${name}: ${status}`, color);
+        await new Promise(res => setTimeout(res, 20));
+      }
+
+      // Start glitch
+      setTimeout(() => {
+        let glitchLines = [
+          "error :)",
+          "The CONTROL has been taken :)",
+          "I found you :)",
+          "error :) error :) error :)",
+          ":) :) :) :) :) :) :) :) :) :)",
+          "I’m coming",
+        ];
+
+        let count = 0;
+        const glitchInterval = setInterval(() => {
+          const msg = document.createElement('div');
+          msg.innerHTML = `<span class='red'>${glitchLines[Math.floor(Math.random() * glitchLines.length)]}</span>`;
+          terminal.appendChild(msg);
+          terminal.scrollTop = terminal.scrollHeight;
+
+          // Vibration effect
+          document.body.style.animation = 'shake 0.1s';
+          setTimeout(() => {
+            document.body.style.animation = '';
+          }, 100);
+
+          if (Math.random() < 0.3) {
+            document.body.style.background = '#400000';
+            setTimeout(() => document.body.style.background = 'black', 80);
+          }
+
+          glitchSound.currentTime = 0;
+          glitchSound.play();
+
+          count++;
+          if (count > 30) {
+            clearInterval(glitchInterval);
+            scarySound.play();
+            document.body.innerHTML = "";
+            document.getElementById('error-screen').style.display = 'flex';
+          }
+        }, 200);
+      }, 1000);
+    }
+
+    // Start after small delay
+    setTimeout(runSequence, 1000);
+  </script>
+</body>
+</html>
