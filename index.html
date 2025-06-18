@@ -12,6 +12,12 @@
       white-space: pre-wrap;
       overflow: hidden;
       transition: all 0.1s ease-in-out;
+      height: 100vh;
+      margin: 0;
+    }
+    #terminal {
+      overflow-y: scroll;
+      height: 100vh;
     }
     .red { color: red; }
     #final-screen {
@@ -46,7 +52,7 @@
 <body onclick="startAudio()">
   <div id="terminal"></div>
   <div id="final-screen">
-    YOU SHOULDN’T HAVE SEEN THAT CAMERA. :)<br>
+    error.system_cant_be_launched<br>
     THE CONTROL IS MINE :)
   </div>
 
@@ -72,18 +78,26 @@
       const line = document.createElement('div');
       if (prompt) line.textContent = "> ";
       terminal.appendChild(line);
+      scrollTerminal();
       for (let i = 0; i < text.length; i++) {
         line.textContent += text[i];
+        scrollTerminal();
         await sleep(speed);
       }
-      if (newline) terminal.appendChild(document.createElement('br'));
-      terminal.scrollTop = terminal.scrollHeight;
+      if (newline) {
+        terminal.appendChild(document.createElement('br'));
+        scrollTerminal();
+      }
     }
 
     function print(text, color = "#00FF00") {
       const span = document.createElement('div');
       span.innerHTML = `<span style="color:${color}">${text}</span>`;
       terminal.appendChild(span);
+      scrollTerminal();
+    }
+
+    function scrollTerminal() {
       terminal.scrollTop = terminal.scrollHeight;
     }
 
@@ -104,8 +118,8 @@
 
       for (let i = 1; i <= 100; i++) {
         const name = `camera_${i.toString().padStart(2, '0')}`;
-        const status = (i === 17) ? "online" : "offline";
-        const color = (i === 17) ? "#00FF00" : "red";
+        const status = (i === 17 || i === 97) ? "online" : "offline";
+        const color = (status === "online") ? "#00FF00" : "red";
         print(`${name}: ${status}`, color);
         await sleep(30);
       }
@@ -132,7 +146,7 @@
         const msg = document.createElement('div');
         msg.innerHTML = `<span class='red'>${messages[Math.floor(Math.random() * messages.length)]}</span>`;
         terminal.appendChild(msg);
-        terminal.scrollTop = terminal.scrollHeight;
+        scrollTerminal();
 
         document.body.style.animation = 'shake 0.2s';
         setTimeout(() => document.body.style.animation = '', 100);
